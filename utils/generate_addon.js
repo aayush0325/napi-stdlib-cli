@@ -251,7 +251,7 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
 
     # Include directories:
     'include_dirs': [
-      '<!@(node -e "var arr = require(\\'../lib/node_modules/napi-stdlib-cli/node_modules/@stdlib/utils/library-manifest\\')(\\'./manifest.json\\',{},{\\'basedir\\':process.cwd(),\\'paths\\':\\'posix\\'}).include; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+      '<!@(node -e "var arr = require(\\'${require.resolve('@stdlib/utils/library-manifest')}\\')(\\'./manifest.json\\',{},{\\'basedir\\':process.cwd(),\\'paths\\':\\'posix\\'}).include; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
     ],
 
     # Add-on destination directory:
@@ -260,17 +260,17 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
     # Source files:
     'src_files': [
       '<(src_dir)/addon.c',
-      '<!@(node -e "var arr = require(\\'../lib/node_modules/napi-stdlib-cli/node_modules/@stdlib/utils/library-manifest\\')(\\'./manifest.json\\',{},{\\'basedir\\':process.cwd(),\\'paths\\':\\'posix\\'}).src; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+      '<!@(node -e "var arr = require(\\'${require.resolve('@stdlib/utils/library-manifest')}\\')(\\'./manifest.json\\',{},{\\'basedir\\':process.cwd(),\\'paths\\':\\'posix\\'}).src; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
     ],
 
     # Library dependencies:
     'libraries': [
-      '<!@(node -e "var arr = require(\\'../lib/node_modules/napi-stdlib-cli/node_modules/@stdlib/utils/library-manifest\\')(\\'./manifest.json\\',{},{\\'basedir\\':process.cwd(),\\'paths\\':\\'posix\\'}).libraries; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+      '<!@(node -e "var arr = require(\\'${require.resolve('@stdlib/utils/library-manifest')}\\')(\\'./manifest.json\\',{},{\\'basedir\\':process.cwd(),\\'paths\\':\\'posix\\'}).libraries; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
     ],
 
     # Library directories:
     'library_dirs': [
-      '<!@(node -e "var arr = require(\\'../lib/node_modules/napi-stdlib-cli/node_modules/@stdlib/utils/library-manifest\\')(\\'./manifest.json\\',{},{\\'basedir\\':process.cwd(),\\'paths\\':\\'posix\\'}).libpath; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+      '<!@(node -e "var arr = require(\\'${require.resolve('@stdlib/utils/library-manifest')}\\')(\\'./manifest.json\\',{},{\\'basedir\\':process.cwd(),\\'paths\\':\\'posix\\'}).libpath; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
     ],
   }, # end variables
 }
