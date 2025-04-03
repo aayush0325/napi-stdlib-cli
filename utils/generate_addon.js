@@ -251,7 +251,7 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
 
     # Include directories:
     'include_dirs': [
-      '<!@(node -e "var arr = require(\\'${require.resolve('@stdlib/utils/library-manifest')}\\')(\\'${path.join(callingDir, 'manifest.json')}\\',{},{\\'basedir\\':\\'${path.resolve(path.dirname(require.resolve('@stdlib/stdlib')), '../../../..')}\\'\,\\'paths\\':\\'posix\\'}).include; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+      '<!@(node -e "var arr = require(\\'${require.resolve("@stdlib/utils/library-manifest")}\\')(\\'${path.join(callingDir, "manifest.json")}\\',{},{\\'basedir\\':\\'${path.resolve(path.dirname(require.resolve("@stdlib/stdlib")), "../../../..")}\\'\,\\'paths\\':\\'posix\\'}).include; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
     ],
 
     # Add-on destination directory:
@@ -260,17 +260,17 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
     # Source files:
     'src_files': [
       '<(src_dir)/addon.c',
-      '<!@(node -e "var arr = require(\\'${require.resolve('@stdlib/utils/library-manifest')}\\')(\\'${path.join(callingDir, 'manifest.json')}\\',{},{\\'basedir\\':\\'${path.resolve(path.dirname(require.resolve('@stdlib/stdlib')), '../../../..')}\\'\,\\'paths\\':\\'posix\\'}).src; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+      '<!@(node -e "var arr = require(\\'${require.resolve("@stdlib/utils/library-manifest")}\\')(\\'${path.join(callingDir, "manifest.json")}\\',{},{\\'basedir\\':\\'${path.resolve(path.dirname(require.resolve("@stdlib/stdlib")), "../../../..")}\\'\,\\'paths\\':\\'posix\\'}).src; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
     ],
 
     # Library dependencies:
     'libraries': [
-      '<!@(node -e "var arr = require(\\'${require.resolve('@stdlib/utils/library-manifest')}\\')(\\'${path.join(callingDir, 'manifest.json')}\\',{},{\\'basedir\\':\\'${path.resolve(path.dirname(require.resolve('@stdlib/stdlib')), '../../../..')}\\'\,\\'paths\\':\\'posix\\'}).libraries; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+      '<!@(node -e "var arr = require(\\'${require.resolve("@stdlib/utils/library-manifest")}\\')(\\'${path.join(callingDir, "manifest.json")}\\',{},{\\'basedir\\':\\'${path.resolve(path.dirname(require.resolve("@stdlib/stdlib")), "../../../..")}\\'\,\\'paths\\':\\'posix\\'}).libraries; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
     ],
 
     # Library directories:
     'library_dirs': [
-      '<!@(node -e "var arr = require(\\'${require.resolve('@stdlib/utils/library-manifest')}\\')(\\'${path.join(callingDir, 'manifest.json')}\\',{},{\\'basedir\\':\\'${path.resolve(path.dirname(require.resolve('@stdlib/stdlib')), '../../../..')}\\'\,\\'paths\\':\\'posix\\'}).libpath; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+      '<!@(node -e "var arr = require(\\'${require.resolve("@stdlib/utils/library-manifest")}\\')(\\'${path.join(callingDir, "manifest.json")}\\',{},{\\'basedir\\':\\'${path.resolve(path.dirname(require.resolve("@stdlib/stdlib")), "../../../..")}\\'\,\\'paths\\':\\'posix\\'}).libpath; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
     ],
   }, # end variables
 }
@@ -338,15 +338,17 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
   fs.writeFileSync(path.join(callingDir, "binding.gyp"), bindingGyp);
   fs.writeFileSync(path.join(callingDir, "include.gypi"), includeGypi);
 
+  const nodeGypBinaryPath = path.resolve(
+    __dirname,
+    "../node_modules/.bin/node-gyp",
+  );
+
   try {
-    execSync(`npx node-gyp clean`, {
-      stdio: "inherit",
-    });
+    // Clean
+    execSync(`${nodeGypBinaryPath} clean`, { stdio: "inherit" });
 
-    execSync(`npx node-gyp configure build`, {
-      stdio: "inherit",
-    });
-
+    // Configure and build
+    execSync(`${nodeGypBinaryPath} configure build`, { stdio: "inherit" });
   } catch (error) {
     console.error("Build failed:", error.message);
     process.exit(1);
