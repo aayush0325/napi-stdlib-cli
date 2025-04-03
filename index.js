@@ -7,66 +7,51 @@ const args = process.argv.slice(2);
 
 function displayHelp() {
   console.log(`
-Usage: napi-stdlib-cli <command> [options]
+Usage: napi-stdlib-cli <sourceFile> <headerFile>
 
-Commands:
-  generate <sourceFile> <headerFile>   Generate a Node.js addon from the provided files.
-  help                                 Show this help message.
+Arguments:
+  <sourceFile>   The source file to generate the addon from.
+  <headerFile>   The header file to generate the addon from.
 
 Examples:
-  napi-stdlib-cli generate source.c header.h
-  napi-stdlib-cli help
+  napi-stdlib-cli source.c header.h
+  napi-stdlib-cli --help
 `);
 }
 
 if (args.length === 0) {
   console.log(
-    "Welcome to napi-stdlib-cli! Use 'napi-stdlib-cli help' for usage information.",
+    "Welcome to napi-stdlib-cli! Use 'napi-stdlib-cli --help' for usage information.",
   );
-} else {
-  const command = args[0];
+} else if (args.length === 1 && args[0] === "--help") {
+  displayHelp();
+} else if (args.length === 2) {
+  const sourceFile = args[0];
+  const headerFile = args[1];
 
-  switch (command) {
-    case "help":
-      displayHelp();
-      break;
+  fs.readFile(sourceFile, "utf8", (err, sourceData) => {
+    if (err) {
+      console.error(`Error: File '${sourceFile}' not found.`);
+      process.exit(1);
+    }
 
-    case "generate":
-      if (args.length < 3) {
-        console.error("Error: Missing arguments for 'generate' command.");
-        console.log("Usage: napi-stdlib-cli generate <sourceFile> <headerFile>");
+    fs.readFile(headerFile, "utf8", (headerErr, headerData) => {
+      if (headerErr) {
+        console.error(`Error: File '${headerFile}' not found.`);
         process.exit(1);
       }
 
-      const sourceFile = args[1];
-      const headerFile = args[2];
-
-      fs.readFile(sourceFile, "utf8", (err, sourceData) => {
-        if (err) {
-          console.error(`Error: File '${sourceFile}' not found.`);
-          process.exit(1);
-        }
-
-        fs.readFile(headerFile, "utf8", (headerErr, headerData) => {
-          if (headerErr) {
-            console.error(`Error: File '${headerFile}' not found.`);
-            process.exit(1);
-          }
-
-          try {
-            generate_addon(sourceData, headerFile, headerData);
-            console.log("Addon generation completed successfully!");
-          } catch (e) {
-            console.error(`Error during addon generation: ${e.message}`);
-            process.exit(1);
-          }
-        });
-      });
-      break;
-
-    default:
-      console.error(`Error: Unknown command '${command}'.`);
-      console.log("Use 'napi-stdlib-cli help' for usage information.");
-      process.exit(1);
-  }
+      try {
+        generate_addon(sourceData, headerFile, headerData);
+        console.log("Addon generation completed successfully!");
+      } catch (e) {
+        console.error(`Error during addon generation: ${e.message}`);
+        process.exit(1);
+      }
+    });
+  });
+} else {
+  console.error("Error: Invalid arguments.");
+  console.log("Use 'napi-stdlib-cli --help' for usage information.");
+  process.exit(1);
 }

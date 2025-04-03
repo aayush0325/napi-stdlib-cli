@@ -17,12 +17,11 @@ This will globally install the tool, making it accessible from anywhere on your 
 `napi-stdlib-cli` takes a C source file and its header file as input and generates a Node.js addon. Here's an example of how to use it:
 
 ```bash
-napi-stdlib-cli generate my_function.c my_header.h
+napi-stdlib-cli my_function.c my_header.h
 ```
 
 ### Options:
 - `help`: Help command.
-- `generate <path_to_c_file> <path_to_header_file>`: Generate the native addon in the current working directory
 
 ## Features
 
