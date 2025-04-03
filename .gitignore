@@ -3,3 +3,5 @@ build
 manifest.json
 src
 include
+binding.gyp
+include.gypi
