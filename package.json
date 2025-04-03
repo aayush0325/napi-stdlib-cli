@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "@stdlib/stdlib": "^0.3.2"
+    "@stdlib/stdlib": "^0.3.2",
+    "node-gyp": "^11.2.0"
   },
   "devDependencies": {
     "prettier": "3.5.3"

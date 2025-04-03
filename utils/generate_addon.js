@@ -339,11 +339,11 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
   fs.writeFileSync(path.join(callingDir, "include.gypi"), includeGypi);
 
   try {
-    execSync(`${require.resolve('node-gyp')} clean`, {
+    execSync(`npx node-gyp clean`, {
       stdio: "inherit",
     });
 
-    execSync(`${require.resolve('node-gyp')} configure build`, {
+    execSync(`npx node-gyp configure build`, {
       stdio: "inherit",
     });
 
