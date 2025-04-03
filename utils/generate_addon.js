@@ -5,7 +5,6 @@ const macros = require("../mappings/macros.json");
 const creatHeaders = require("../mappings/create.json");
 const { execSync } = require("child_process");
 const path = require("path");
-const resolve = require('resolve');
 
 // get calling directory (where user executed the command)
 const callingDir = process.cwd();
@@ -248,7 +247,7 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
   # Define variables to be used throughout the configuration for all targets:
   'variables': {
     # Source directory:
-    'src_dir': '${path.dirname(callingDir)}/',
+    'src_dir': '${path.dirname(sourceFile)}/',
 
     # Include directories:
     'include_dirs': [
@@ -256,7 +255,7 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
     ],
 
     # Add-on destination directory:
-    'addon_output_dir': '${path.dirname(callingDir)}/',
+    'addon_output_dir': '${path.dirname(sourceFile)}/',
 
     # Source files:
     'src_files': [
@@ -350,19 +349,6 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
       cwd: callingDir,
     });
 
-    const builtAddon = path.join(callingDir, "./src/addon.node");
-    const destination = path.join(callingDir, "addon.node");
-
-    fs.copyFileSync(builtAddon, destination);
-    console.log(`\nAddon copied to: ${destination}`);
-
-    // fs.rmSync(includeDir, { recursive: true, force: true });
-    // fs.rmSync(srcDir, { recursive: true, force: true });
-    // fs.rmSync(path.join(callingDir, "manifest.json"), { force: true });
-    // execSync("node-gyp clean", {
-    //   stdio: "inherit",
-    //   cwd: callingDir,
-    // });
   } catch (error) {
     console.error("Build failed:", error.message);
     process.exit(1);
