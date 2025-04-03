@@ -18,9 +18,7 @@
   "files": [
     "utils/",
     "mappings/",
-    "index.js",
-    "binding.gyp",
-    "include.gypi"
+    "index.js"
   ],
   "name": "napi-stdlib-cli",
   "version": "1.0.6",
