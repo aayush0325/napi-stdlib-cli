@@ -1,0 +1,4 @@
+{
+  "create_double": "#include \"stdlib/napi/create_double.h\"",
+  "create_int32": "#include \"stdlib/napi/create_int32.h\""
+}

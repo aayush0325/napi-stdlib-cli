@@ -1,0 +1,41 @@
+{
+  "dependencies": {
+    "@stdlib/stdlib": "^0.3.2",
+    "resolve": "^1.22.10",
+    "node-gyp": "^9.0.0"
+  },
+  "devDependencies": {
+    "prettier": "3.5.3"
+  },
+  "bin": {
+    "napi-cli": "./index.js"
+  },
+  "scripts": {
+    "format": "npx prettier . --write",
+    "preinstall": "echo 'Starting installation...'",
+    "postinstall": "npm install -g node-gyp"
+  },
+  "files": [
+    "utils/",
+    "mappings/",
+    "index.js",
+    "binding.gyp",
+    "include.gypi"
+  ],
+  "name": "napi-cli",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aayush0325/napi-cli.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "gypfile": true,
+  "bugs": {
+    "url": "https://github.com/aayush0325/napi-cli/issues"
+  },
+  "homepage": "https://github.com/aayush0325/napi-cli#readme",
+  "description": "A CLI tool to generate native addons for nodejs when provided a C file and it's header file"
+}

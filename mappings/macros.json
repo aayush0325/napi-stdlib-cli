@@ -1,0 +1,15 @@
+{
+  "argv_double": "STDLIB_NAPI_ARGV_DOUBLE",
+  "argv_float": "STDLIB_NAPI_ARGV_FLOAT",
+  "argv_int32": "STDLIB_NAPI_ARGV_INT32",
+  "argv_int64": "STDLIB_NAPI_ARGV_INT64",
+  "argv_uint32": "STDLIB_NAPI_ARGV_UINT32",
+  "argv_float32array": "STDLIB_NAPI_ARGV_FLOAT32ARRAY",
+  "argv_float64array": "STDLIB_NAPI_ARGV_FLOAT64ARRAY",
+  "argv_int32array": "STDLIB_NAPI_ARGV_INT32ARRAY",
+  "argv_int8array": "STDLIB_NAPI_ARGV_INT8ARRAY",
+  "argv_int16array": "STDLIB_NAPI_ARGV_INT16ARRAY",
+  "argv_uint8array": "STDLIB_NAPI_ARGV_UINT8ARRAY",
+  "argv_uint16array": "STDLIB_NAPI_ARGV_UINT16ARRAY",
+  "argv_uint32array": "STDLIB_NAPI_ARGV_UINT32ARRAY"
+}

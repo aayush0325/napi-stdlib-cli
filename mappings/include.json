@@ -1,0 +1,15 @@
+{
+  "argv_double": "#include \"stdlib/napi/argv_double.h\"",
+  "argv_float": "#include \"stdlib/napi/argv_float.h\"",
+  "argv_int32": "#include \"stdlib/napi/argv_int32.h\"",
+  "argv_int64": "#include \"stdlib/napi/argv_int64.h\"",
+  "argv_uint32": "#include \"stdlib/napi/argv_uint32.h\"",
+  "argv_float32array": "#include \"stdlib/napi/argv_float32array.h\"",
+  "argv_float64array": "#include \"stdlib/napi/argv_float64array.h\"",
+  "argv_int32array": "#include \"stdlib/napi/argv_int32array.h\"",
+  "argv_int8array": "#include \"stdlib/napi/argv_int8array.h\"",
+  "argv_int16array": "#include \"stdlib/napi/argv_int16array.h\"",
+  "argv_uint8array": "#include \"stdlib/napi/argv_uint8array.h\"",
+  "argv_uint16array": "#include \"stdlib/napi/argv_uint16array.h\"",
+  "argv_uint32array": "#include \"stdlib/napi/argv_uint32array.h\""
+}
