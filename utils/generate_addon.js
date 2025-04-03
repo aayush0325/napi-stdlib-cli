@@ -341,12 +341,10 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
   try {
     execSync("node-gyp clean", {
       stdio: "inherit",
-      cwd: callingDir,
     });
 
     execSync("node-gyp configure build", {
       stdio: "inherit",
-      cwd: callingDir,
     });
 
   } catch (error) {
