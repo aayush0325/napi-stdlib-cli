@@ -1,9 +1,3 @@
-# A GYP include file for building a Node.js native add-on.
-#
-# Main documentation:
-#
-# [1]: https://gyp.gsrc.io/docs/InputFormatReference.md
-# [2]: https://gyp.gsrc.io/docs/UserDocumentation.md
 {
   # Define variables to be used throughout the configuration for all targets:
   'variables': {

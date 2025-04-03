@@ -42,7 +42,7 @@ if (args.length === 0) {
       }
 
       try {
-        generate_addon(sourceData, headerFile, headerData);
+        generate_addon(sourceFile, sourceData, headerFile, headerData);
         console.log("Addon generation completed successfully!");
       } catch (e) {
         console.error(`Error during addon generation: ${e.message}`);

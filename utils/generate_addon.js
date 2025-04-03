@@ -5,25 +5,12 @@ const macros = require("../mappings/macros.json");
 const creatHeaders = require("../mappings/create.json");
 const { execSync } = require("child_process");
 const path = require("path");
-
-const installationDir = path.join(__dirname, ".."); // points to napi-stdlib-cli root directory
+const resolve = require('resolve');
 
 // get calling directory (where user executed the command)
 const callingDir = process.cwd();
 
-function generate_addon(data, headerfilename, headerdata) {
-  const buildDir = path.join(installationDir, "build");
-  if (fs.existsSync(buildDir)) {
-    fs.rmSync(buildDir, { recursive: true, force: true });
-  }
-
-  // create necessary directories in installation dir
-  const srcDir = path.join(installationDir, "src");
-  const includeDir = path.join(installationDir, "include");
-  [srcDir, includeDir].forEach((dir) => {
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  });
-
+function generate_addon(sourceFile, data, headerfilename, headerdata) {
   const argsinfo = getargsinfo(data);
 
   console.log(argsinfo);
@@ -92,10 +79,10 @@ function generate_addon(data, headerfilename, headerdata) {
       "confs": [
         {
           "src": [
-            "./src/main.c"
+            "./${sourceFile}"
           ],
           "include": [
-            "./include"
+            "${path.dirname(headerfilename)}/"
           ],
           "libraries": [],
           "libpath": [],
@@ -103,6 +90,193 @@ function generate_addon(data, headerfilename, headerdata) {
         }
       ]
     }`;
+
+  var bindingGyp = `
+{
+  # List of files to include in this file:
+  'includes': [
+    './include.gypi',
+  ],
+
+  # Define variables to be used throughout the configuration for all targets:
+  'variables': {
+    # Target name should match the add-on export name:
+    'addon_target_name%': 'addon',
+
+    # Set variables based on the host OS:
+    'conditions': [
+      [
+        'OS=="win"',
+        {
+          # Define the object file suffix:
+          'obj': 'obj',
+        },
+        {
+          # Define the object file suffix:
+          'obj': 'o',
+        }
+      ], # end condition (OS=="win")
+    ], # end conditions
+  }, # end variables
+
+  # Define compile targets:
+  'targets': [
+
+    # Target to generate an add-on:
+    {
+      # The target name should match the add-on export name:
+      'target_name': '<(addon_target_name)',
+
+      # Define dependencies:
+      'dependencies': [],
+
+      # Define directories which contain relevant include headers:
+      'include_dirs': [
+        # Local include directory:
+        '<@(include_dirs)',
+      ],
+
+      # List of source files:
+      'sources': [
+        '<@(src_files)',
+      ],
+
+      # Settings which should be applied when a target's object files are used as linker input:
+      'link_settings': {
+        # Define libraries:
+        'libraries': [
+          '<@(libraries)',
+        ],
+
+        # Define library directories:
+        'library_dirs': [
+          '<@(library_dirs)',
+        ],
+      },
+
+      # C/C++ compiler flags:
+      'cflags': [
+        # Enable commonly used warning options:
+        '-Wall',
+
+        # Aggressive optimization:
+        '-O3',
+      ],
+
+      # C specific compiler flags:
+      'cflags_c': [
+        # Specify the C standard to which a program is expected to conform:
+        '-std=c99',
+      ],
+
+      # C++ specific compiler flags:
+      'cflags_cpp': [
+        # Specify the C++ standard to which a program is expected to conform:
+        '-std=c++11',
+      ],
+
+      # Linker flags:
+      'ldflags': [],
+
+      # Apply conditions based on the host OS:
+      'conditions': [
+        [
+          'OS=="mac"',
+          {
+            # Linker flags:
+            'ldflags': [
+              '-undefined dynamic_lookup',
+              '-Wl,-no-pie',
+              '-Wl,-search_paths_first',
+            ],
+          },
+        ], # end condition (OS=="mac")
+        [
+          'OS!="win"',
+          {
+            # C/C++ flags:
+            'cflags': [
+              # Generate platform-independent code:
+              '-fPIC',
+            ],
+          },
+        ], # end condition (OS!="win")
+      ], # end conditions
+    }, # end target <(addon_target_name)
+
+    # Target to copy a generated add-on to a standard location:
+    {
+      'target_name': 'copy_addon',
+
+      # Declare that the output of this target is not linked:
+      'type': 'none',
+
+      # Define dependencies:
+      'dependencies': [
+        # Require that the add-on be generated before building this target:
+        '<(addon_target_name)',
+      ],
+
+      # Define a list of actions:
+      'actions': [
+        {
+          'action_name': 'copy_addon',
+          'message': 'Copying addon...',
+
+          # Explicitly list the inputs in the command-line invocation below:
+          'inputs': [],
+
+          # Declare the expected outputs:
+          'outputs': [
+            '<(addon_output_dir)/<(addon_target_name).node',
+          ],
+
+          # Define the command-line invocation:
+          'action': [
+            'cp',
+            '<(PRODUCT_DIR)/<(addon_target_name).node',
+            '<(addon_output_dir)/<(addon_target_name).node',
+          ],
+        },
+      ], # end actions
+    }, # end target copy_addon
+  ], # end targets
+}
+`;
+
+  var includeGypi = `{
+  # Define variables to be used throughout the configuration for all targets:
+  'variables': {
+    # Source directory:
+    'src_dir': '${path.dirname(callingDir)}/',
+
+    # Include directories:
+    'include_dirs': [
+      '<!@(node -e "var arr = require(\\'@stdlib/utils/library-manifest\\')(\\'./manifest.json\\',{},{\\'basedir\\':process.cwd(),\\'paths\\':\\'posix\\'}).include; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+    ],
+
+    # Add-on destination directory:
+    'addon_output_dir': '${path.dirname(callingDir)}/',
+
+    # Source files:
+    'src_files': [
+      '<(src_dir)/addon.c',
+      '<!@(node -e "var arr = require(\\'@stdlib/utils/library-manifest\\')(\\'./manifest.json\\',{},{\\'basedir\\':process.cwd(),\\'paths\\':\\'posix\\'}).src; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+    ],
+
+    # Library dependencies:
+    'libraries': [
+      '<!@(node -e "var arr = require(\\'@stdlib/utils/library-manifest\\')(\\'./manifest.json\\',{},{\\'basedir\\':process.cwd(),\\'paths\\':\\'posix\\'}).libraries; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+    ],
+
+    # Library directories:
+    'library_dirs': [
+      '<!@(node -e "var arr = require(\\'@stdlib/utils/library-manifest\\')(\\'./manifest.json\\',{},{\\'basedir\\':process.cwd(),\\'paths\\':\\'posix\\'}).libpath; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+    ],
+  }, # end variables
+}
+`;
+
   console.log(JSON.stringify(manifestDeps));
 
   // CONTENT
@@ -112,7 +286,8 @@ function generate_addon(data, headerfilename, headerdata) {
       variable.key === "argv_int32" ||
       variable.key === "argv_double" ||
       variable.key === "argv_float" ||
-      variable.key === "argv_int64" || variable.key === "argv_uint32"
+      variable.key === "argv_int64" ||
+      variable.key === "argv_uint32"
     ) {
       if (/^N_/.test(variable.variableName)) {
         // skip if it is a size variable name as it will be used in the array macro
@@ -131,7 +306,8 @@ function generate_addon(data, headerfilename, headerdata) {
           variable.key === "argv_int32" ||
           variable.key === "argv_double" ||
           variable.key === "argv_float" ||
-          variable.key === "argv_int64"|| variable.key === "argv_uint32"
+          variable.key === "argv_int64" ||
+          variable.key === "argv_uint32"
         )
       )
     ) {
@@ -158,35 +334,35 @@ function generate_addon(data, headerfilename, headerdata) {
 
   const addon = `#include "${headerfilename}"\n#include "stdlib/napi/export.h"\n#include "stdlib/napi/argv.h"\n${addtionalIncludes}\n#include <node_api.h>\n\nstatic napi_value addon( napi_env env, napi_callback_info info ) {${addonConfig}${functionCall}}\n\nSTDLIB_NAPI_MODULE_EXPORT_FCN( addon )`;
 
-  fs.writeFileSync(path.join(srcDir, "addon.c"), addon);
-  fs.writeFileSync(path.join(srcDir, "main.c"), data);
-  fs.writeFileSync(path.join(includeDir, headerfilename), headerdata);
-  fs.writeFileSync(path.join(installationDir, "manifest.json"), manifestJSON);
+  fs.writeFileSync(path.join(callingDir, "addon.c"), addon);
+  fs.writeFileSync(path.join(callingDir, "manifest.json"), manifestJSON);
+  fs.writeFileSync(path.join(callingDir, "binding.gyp"), bindingGyp);
+  fs.writeFileSync(path.join(callingDir, "include.gypi"), includeGypi);
 
   try {
     execSync("node-gyp clean", {
       stdio: "inherit",
-      cwd: installationDir,
+      cwd: callingDir,
     });
 
     execSync("node-gyp configure build", {
       stdio: "inherit",
-      cwd: installationDir,
+      cwd: callingDir,
     });
 
-    const builtAddon = path.join(installationDir, "./src/addon.node");
+    const builtAddon = path.join(callingDir, "./src/addon.node");
     const destination = path.join(callingDir, "addon.node");
 
     fs.copyFileSync(builtAddon, destination);
     console.log(`\nAddon copied to: ${destination}`);
 
-    fs.rmSync(includeDir, { recursive: true, force: true });
-    fs.rmSync(srcDir, { recursive: true, force: true });
-    fs.rmSync(path.join(installationDir, "manifest.json"), { force: true });
-    execSync("node-gyp clean", {
-      stdio: "inherit",
-      cwd: installationDir,
-    });
+    // fs.rmSync(includeDir, { recursive: true, force: true });
+    // fs.rmSync(srcDir, { recursive: true, force: true });
+    // fs.rmSync(path.join(callingDir, "manifest.json"), { force: true });
+    // execSync("node-gyp clean", {
+    //   stdio: "inherit",
+    //   cwd: callingDir,
+    // });
   } catch (error) {
     console.error("Build failed:", error.message);
     process.exit(1);

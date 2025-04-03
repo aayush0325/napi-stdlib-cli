@@ -21,6 +21,7 @@ napi-stdlib-cli my_function.c my_header.h
 ```
 
 ### Options:
+
 - `help`: Help command.
 
 ## Features
@@ -30,32 +31,31 @@ napi-stdlib-cli my_function.c my_header.h
 
 ## Supported parameter types
 
-|      C Type     |      JavaScript Equivalent   |            Node-API Macro            |
-|-----------------|------------------------------|--------------------------------------|
-| `double`        | `number`                     | `@stdlib/napi/argv_double`           |
-| `double*`       | `Float64Array`               | `@stdlib/napi/argv_float64array`     |
-| `float`         | `number`                     | `@stdlib/napi/argv_float`            |
-| `float*`        | `Float32Array`               | `@stdlib/napi/argv_float32array`     |
-| `int32_t`       | `number`                     | `@stdlib/napi/argv_int32`            |
-| `int32_t*`      | `Int32Array`                 | `@stdlib/napi/argv_int32array`       |
-| `int`           | `number`                     | `@stdlib/napi/argv_int32`            |
-| `int*`          | `Int32Array`                 | `@stdlib/napi/argv_int32array`       |
-| `int64_t`       | `bigint`                     | `@stdlib/napi/argv_int64`            |
-| `int8_t*`       | `Int8Array`                  | `@stdlib/napi/argv_int8array`        |
-| `int16_t*`      | `Int16Array`                 | `@stdlib/napi/argv_int16array`       |
-| `uint8_t*`      | `Uint8Array`                 | `@stdlib/napi/argv_uint8array`       |
-| `uint16_t*`     | `Uint16Array`                | `@stdlib/napi/argv_uint16array`      |
-| `uint32_t`      | `number`                     | `@stdlib/napi/argv_uint32`           |
-| `uint32_t*`     | `Uint32Array`                | `@stdlib/napi/argv_uint32array`      |
+| C Type      | JavaScript Equivalent | Node-API Macro                   |
+| ----------- | --------------------- | -------------------------------- |
+| `double`    | `number`              | `@stdlib/napi/argv_double`       |
+| `double*`   | `Float64Array`        | `@stdlib/napi/argv_float64array` |
+| `float`     | `number`              | `@stdlib/napi/argv_float`        |
+| `float*`    | `Float32Array`        | `@stdlib/napi/argv_float32array` |
+| `int32_t`   | `number`              | `@stdlib/napi/argv_int32`        |
+| `int32_t*`  | `Int32Array`          | `@stdlib/napi/argv_int32array`   |
+| `int`       | `number`              | `@stdlib/napi/argv_int32`        |
+| `int*`      | `Int32Array`          | `@stdlib/napi/argv_int32array`   |
+| `int64_t`   | `bigint`              | `@stdlib/napi/argv_int64`        |
+| `int8_t*`   | `Int8Array`           | `@stdlib/napi/argv_int8array`    |
+| `int16_t*`  | `Int16Array`          | `@stdlib/napi/argv_int16array`   |
+| `uint8_t*`  | `Uint8Array`          | `@stdlib/napi/argv_uint8array`   |
+| `uint16_t*` | `Uint16Array`         | `@stdlib/napi/argv_uint16array`  |
+| `uint32_t`  | `number`              | `@stdlib/napi/argv_uint32`       |
+| `uint32_t*` | `Uint32Array`         | `@stdlib/napi/argv_uint32array`  |
 
-## Supported return types 
+## Supported return types
 
-|      C Type     |      JavaScript Equivalent   |            Node-API Macro            |
-|-----------------|------------------------------|--------------------------------------|
-| `void`          | `void`                       |                   -                  |
-| `double`        | `number`                     | `@stdlib/napi/create_double`         |
-| `float`         | `number`                     | `@stdlib/napi/create_double`         |
-
+| C Type   | JavaScript Equivalent | Node-API Macro               |
+| -------- | --------------------- | ---------------------------- |
+| `void`   | `void`                | -                            |
+| `double` | `number`              | `@stdlib/napi/create_double` |
+| `float`  | `number`              | `@stdlib/napi/create_double` |
 
 ## Limitations (IMPORTANT)
 
@@ -90,10 +90,11 @@ int add(int a, int b);
 Running `napi-stdlib-cli` will generate a Node.js addon that allows you to call the `add` function directly from JavaScript:
 
 ```javascript
-const addon = require('./addon.node');
+const addon = require("./addon.node");
 
 console.log(addon(2, 3)); // Output: 5
 ```
 
 ---
+
 Happy coding with `napi-stdlib-cli`!
