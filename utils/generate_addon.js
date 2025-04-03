@@ -6,7 +6,7 @@ const creatHeaders = require("../mappings/create.json");
 const { execSync } = require("child_process");
 const path = require("path");
 
-const installationDir = path.join(__dirname, ".."); // points to napi-cli root directory
+const installationDir = path.join(__dirname, ".."); // points to napi-stdlib-cli root directory
 
 // get calling directory (where user executed the command)
 const callingDir = process.cwd();

@@ -7,21 +7,21 @@ const args = process.argv.slice(2);
 
 function displayHelp() {
   console.log(`
-Usage: napi-cli <command> [options]
+Usage: napi-stdlib-cli <command> [options]
 
 Commands:
   generate <sourceFile> <headerFile>   Generate a Node.js addon from the provided files.
   help                                 Show this help message.
 
 Examples:
-  napi-cli generate source.c header.h
-  napi-cli help
+  napi-stdlib-cli generate source.c header.h
+  napi-stdlib-cli help
 `);
 }
 
 if (args.length === 0) {
   console.log(
-    "Welcome to napi-cli! Use 'napi-cli help' for usage information.",
+    "Welcome to napi-stdlib-cli! Use 'napi-stdlib-cli help' for usage information.",
   );
 } else {
   const command = args[0];
@@ -34,7 +34,7 @@ if (args.length === 0) {
     case "generate":
       if (args.length < 3) {
         console.error("Error: Missing arguments for 'generate' command.");
-        console.log("Usage: napi-cli generate <sourceFile> <headerFile>");
+        console.log("Usage: napi-stdlib-cli generate <sourceFile> <headerFile>");
         process.exit(1);
       }
 
@@ -66,7 +66,7 @@ if (args.length === 0) {
 
     default:
       console.error(`Error: Unknown command '${command}'.`);
-      console.log("Use 'napi-cli help' for usage information.");
+      console.log("Use 'napi-stdlib-cli help' for usage information.");
       process.exit(1);
   }
 }

@@ -1,23 +1,23 @@
-# napi-cli
+# napi-stdlib-cli
 
-`napi-cli` is a command-line tool designed to simplify the process of generating native Node.js addons. By providing a source C file with a single function and a corresponding header file, `napi-cli` generates the necessary bindings using the Node-API macros from [stdlib-js](https://github.com/stdlib-js).
+`napi-stdlib-cli` is a command-line tool designed to simplify the process of generating native Node.js addons. By providing a source C file with a single function and a corresponding header file, `napi-stdlib-cli` generates the necessary bindings using the Node-API macros from [stdlib-js](https://github.com/stdlib-js).
 
 ## Installation
 
-To install `napi-cli`, use the following command:
+To install `napi-stdlib-cli`, use the following command:
 
 ```bash
-npm install -g napi-cli@latest
+npm install -g napi-stdlib-cli@latest
 ```
 
 This will globally install the tool, making it accessible from anywhere on your system.
 
 ## Usage
 
-`napi-cli` takes a C source file and its header file as input and generates a Node.js addon. Here's an example of how to use it:
+`napi-stdlib-cli` takes a C source file and its header file as input and generates a Node.js addon. Here's an example of how to use it:
 
 ```bash
-napi-cli generate my_function.c my_header.h
+napi-stdlib-cli generate my_function.c my_header.h
 ```
 
 ### Options:
@@ -88,7 +88,7 @@ int add(int a, int b);
 #endif
 ```
 
-Running `napi-cli` will generate a Node.js addon that allows you to call the `add` function directly from JavaScript:
+Running `napi-stdlib-cli` will generate a Node.js addon that allows you to call the `add` function directly from JavaScript:
 
 ```javascript
 const addon = require('./addon.node');
@@ -97,4 +97,4 @@ console.log(addon(2, 3)); // Output: 5
 ```
 
 ---
-Happy coding with `napi-cli`!
+Happy coding with `napi-stdlib-cli`!

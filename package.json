@@ -8,7 +8,7 @@
     "prettier": "3.5.3"
   },
   "bin": {
-    "napi-cli": "./index.js"
+    "napi-stdlib-cli": "./index.js"
   },
   "scripts": {
     "format": "npx prettier . --write",
@@ -22,7 +22,7 @@
     "binding.gyp",
     "include.gypi"
   ],
-  "name": "napi-cli",
+  "name": "napi-stdlib-cli",
   "version": "1.0.0",
   "main": "index.js",
   "repository": {
