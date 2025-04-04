@@ -12,7 +12,7 @@ const callingDir = process.cwd();
 function generate_addon(sourceFile, data, headerfilename, headerdata) {
   const argsinfo = getargsinfo(data);
 
-  console.log(argsinfo);
+  // console.log(argsinfo);
 
   let addtionalIncludes = ``;
   const addedIncludes = new Set();
@@ -275,7 +275,7 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
 }
 `;
 
-  console.log(JSON.stringify(manifestDeps));
+  // console.log(JSON.stringify(manifestDeps));
 
   // CONTENT
   let addonConfig = `\n\tSTDLIB_NAPI_ARGV( env, info, argv, argc, ${argsinfo.result.length} );\n`;
