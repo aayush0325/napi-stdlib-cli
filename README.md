@@ -12,6 +12,12 @@ npm install -g napi-stdlib-cli@latest
 
 This will globally install the tool, making it accessible from anywhere on your system.
 
+To check your installation, use the following command:
+
+```bash
+napi-stdlib-cli --version
+```
+
 ## Usage
 
 `napi-stdlib-cli` takes a C source file and its header file as input and generates a Node.js addon. Here's an example of how to use it:
@@ -24,7 +30,9 @@ See the `examples/` directory for detailed instructions on how to use this!
 
 ### Options:
 
-- `help`: Help command.
+- `--help`: Help command.
+- `--version`: Version command.
+
 
 ## Features
 

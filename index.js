@@ -2,7 +2,7 @@
 
 const fs = require("fs");
 const generate_addon = require("./utils/generate_addon");
-
+const pkg = require("./package.json");
 const args = process.argv.slice(2);
 
 function displayHelp() {
@@ -16,6 +16,7 @@ Arguments:
 Examples:
   napi-stdlib-cli source.c header.h
   napi-stdlib-cli --help
+  napi-stdlib-cli --version
 `);
 }
 
@@ -25,6 +26,8 @@ if (args.length === 0) {
   );
 } else if (args.length === 1 && args[0] === "--help") {
   displayHelp();
+} else if (args.length === 1 && args[0] === "--version") {
+  console.log(`${pkg.version}`);
 } else if (args.length === 2) {
   const sourceFile = args[0];
   const headerFile = args[1];
