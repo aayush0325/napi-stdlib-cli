@@ -20,7 +20,7 @@
     "index.js"
   ],
   "name": "napi-stdlib-cli",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "main": "index.js",
   "repository": {
     "type": "git",
