@@ -1,7 +1,5 @@
 node_modules
 build
-manifest.json
 src
 include
-binding.gyp
-include.gypi
+addon.node

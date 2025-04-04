@@ -20,6 +20,8 @@ This will globally install the tool, making it accessible from anywhere on your 
 napi-stdlib-cli my_function.c my_header.h
 ```
 
+See the `examples/` directory for detailed instructions on how to use this!
+
 ### Options:
 
 - `help`: Help command.
@@ -59,9 +61,12 @@ napi-stdlib-cli my_function.c my_header.h
 
 ## Limitations (IMPORTANT)
 
+This tool is still very much under development and has some limitations:
+
 - Your source C file should include the header that you are providing the path to in the argument
-- Your source C file should only have that function
-- The supported parameter and return types are strictly limited to those listed in the tables above.
+- Your source C file should only have that one function.
+- The supported function parameters and return types are strictly limited to those listed in the tables above.
+- The header file and the source file should be in the **same** directory.
 - **For any parameter that is an array (e.g., `int*`, `float*`, etc.), the corresponding C function must include an additional `int` or `int32_t` parameter named `N_<variable_name>`. This parameter should specify the size of the array to ensure proper memory allocation.**
 
 ## Example
