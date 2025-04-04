@@ -17,8 +17,7 @@
   "files": [
     "utils/",
     "mappings/",
-    "index.js",
-    "examples/"
+    "index.js"
   ],
   "name": "napi-stdlib-cli",
   "version": "1.0.9",
