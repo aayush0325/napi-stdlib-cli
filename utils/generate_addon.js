@@ -24,19 +24,18 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
     const variable = argsinfo.result[i];
     const isSizeVar = /^N_/.test(variable.variableName);
 
-    let modifiedKey = variable.key;
-    if (isSizeVar && modifiedKey === "argv_int32") {
-      modifiedKey = "argv_int64"; // switch key for size variables
+    if (isSizeVar) {
+      continue; // skip size variables entirely as they'll be used in the array macro
     }
 
-    if (include[modifiedKey] && !addedIncludes.has(include[modifiedKey])) {
-      const header = include[modifiedKey];
+    if (include[variable.key] && !addedIncludes.has(include[variable.key])) {
+      const header = include[variable.key];
       addtionalIncludes += header + "\n";
 
-      const pkg = modifiedKey.replace("_", "-");
+      const pkg = variable.key.replace("_", "-");
       manifestDeps.push(`@stdlib/napi/${pkg}`);
 
-      addedIncludes.add(include[modifiedKey]);
+      addedIncludes.add(include[variable.key]);
     }
   }
 
