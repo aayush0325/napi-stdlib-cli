@@ -13,7 +13,7 @@ double mean(int N_x, double *x);
 #endif // HEADER_H
 ```
 
-2. Write the source file, it should include the defined header file and only contain one function from it.
+2. Write the source file, it should include the defined header file and only contain one function from it. (Note that for an array `x` we are passing it's size with the name `N_x`.)
 
 ```c
 #include "mean.h"
