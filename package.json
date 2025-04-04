@@ -17,10 +17,11 @@
   "files": [
     "utils/",
     "mappings/",
-    "index.js"
+    "index.js",
+    "examples/"
   ],
   "name": "napi-stdlib-cli",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "main": "index.js",
   "repository": {
     "type": "git",
