@@ -22,11 +22,22 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    # - name: Run tests (placeholder)
-    #   run: echo "No tests defined yet. Add your test command here, e.g., npm test"
-    #   # If you have a test script, replace the above line with: run: npm test
+    - name: Configure Git
+      run: |
+        git config user.name github-actions[bot]
+        git config user.email github-actions[bot]@users.noreply.github.com
+
+    - name: Bump version and create tag
+      run: npm version patch
 
     - name: Publish to npm
       run: npm publish --access public
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: main
+        tags: true
