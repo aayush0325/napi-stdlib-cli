@@ -19,6 +19,11 @@ jobs:
         node-version: '20'
         registry-url: 'https://registry.npmjs.org/'
 
+    - name: Configure Git
+      run: |
+        git config user.name github-actions[bot]
+        git config user.email github-actions[bot]@users.noreply.github.com
+
     - name: Install dependencies
       run: npm install
 
@@ -27,11 +32,6 @@ jobs:
         git add package-lock.json
         git commit -m "chore: update package-lock.json" || true
       # The '|| true' ensures the step doesn't fail if there are no changes to commit
-
-    - name: Configure Git
-      run: |
-        git config user.name github-actions[bot]
-        git config user.email github-actions[bot]@users.noreply.github.com
 
     - name: Bump version and create tag
       run: npm version patch
