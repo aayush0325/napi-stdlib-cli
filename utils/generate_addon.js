@@ -1,56 +1,85 @@
+// Core Node.js modules
 const fs = require("fs");
-const include = require("../mappings/include.json");
-const getargsinfo = require("./getargsinfo");
-const macros = require("../mappings/macros.json");
-const creatHeaders = require("../mappings/create.json");
 const { execSync } = require("child_process");
 const path = require("path");
 
-// get calling directory (where user executed the command)
+// Mappings and utility modules
+const includeMappings = require("../mappings/include.json");
+const getArgsInfo = require("./getargsinfo");
+const macroMappings = require("../mappings/macros.json");
+const createHeaderMappings = require("../mappings/create.json");
+
+// Get the directory from which the user executed the command
 const callingDir = process.cwd();
 
-function generate_addon(sourceFile, data, headerfilename, headerdata) {
-  const argsinfo = getargsinfo(data);
+/**
+ * Generates and compiles a Node.js N-API addon from C source and header files.
+ *
+ * @param {string} sourceFilePath - The absolute path to the C source file.
+ * @param {string} sourceCode - The content of the C source file.
+ * @param {string} headerFilePath - The absolute path to the C header file.
+ * @param {string} headerCode - The content of the C header file.
+ */
+function generate_addon(
+  sourceFilePath,
+  sourceCode,
+  headerFilePath,
+  headerCode,
+) {
+  // Extract function signature information from the C source code
+  const argsInfo = getArgsInfo(sourceCode);
 
   // console.log(argsinfo);
 
-  let addtionalIncludes = ``;
+  let additionalIncludes = ``;
   const addedIncludes = new Set();
 
-  // HEADERS
-  var manifestDeps = ["@stdlib/napi/export"];
+  // Initialize manifest dependencies with the base N-API export module
+  const manifestDependencies = ["@stdlib/napi/export"];
 
-  for (let i = 0; i < argsinfo.result.length; i++) {
-    const variable = argsinfo.result[i];
-    const isSizeVar = /^N_/.test(variable.variableName);
+  // Determine additional headers and manifest dependencies based on function arguments
+  for (let i = 0; i < argsInfo.result.length; i++) {
+    const variable = argsInfo.result[i];
+    // Check if the variable is a size variable (e.g., N_ARRAY)
+    const isSizeVariable = /^N_/.test(variable.variableName);
 
-    if (isSizeVar) {
-      continue; // skip size variables entirely as they'll be used in the array macro
+    if (isSizeVariable) {
+      continue; // Skip size variables as they are handled by array macros
     }
 
-    if (include[variable.key] && !addedIncludes.has(include[variable.key])) {
-      const header = include[variable.key];
-      addtionalIncludes += header + "\n";
+    // If an include mapping exists for the variable type and it hasn't been added yet
+    if (
+      includeMappings[variable.key] &&
+      !addedIncludes.has(includeMappings[variable.key])
+    ) {
+      const header = includeMappings[variable.key];
+      additionalIncludes += header + "\n";
 
-      const pkg = variable.key.replace("_", "-");
-      manifestDeps.push(`@stdlib/napi/${pkg}`);
+      // Derive package name for manifest from the variable key
+      const packageName = variable.key.replace("_", "-");
+      manifestDependencies.push(`@stdlib/napi/${packageName}`);
 
-      addedIncludes.add(include[variable.key]);
+      addedIncludes.add(includeMappings[variable.key]);
     }
   }
 
-  if (argsinfo.returnType === "double" || argsinfo.returnType === "float") {
-    addtionalIncludes += `${creatHeaders["create_double"]}\n`;
-    manifestDeps.push(`@stdlib/napi/create-double`);
+  // Add specific headers and manifest dependencies based on the function's return type
+  if (argsInfo.returnType === "double" || argsInfo.returnType === "float") {
+    additionalIncludes += `${createHeaderMappings["create_double"]}\n`;
+    manifestDependencies.push(`@stdlib/napi/create-double`);
   } else if (
-    argsinfo.returnType === "int" ||
-    argsinfo.returnType === "int32_t"
+    argsInfo.returnType === "int" ||
+    argsInfo.returnType === "int32_t"
   ) {
-    addtionalIncludes += `${creatHeaders["create_int32"]}\n`;
-    manifestDeps.push(`@stdlib/napi/create-int32`);
+    additionalIncludes += `${createHeaderMappings["create_int32"]}\n`;
+    manifestDependencies.push(`@stdlib/napi/create-int32`);
   }
 
-  var manifestJSON = `{
+  /**
+   * Generates the content for `manifest.json`.
+   * This file describes the addon's dependencies and source/include paths for `@stdlib`.
+   */
+  const manifestJSONContent = `{
       "options": {},
       "fields": [
         {
@@ -77,19 +106,23 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
       "confs": [
         {
           "src": [
-            "./${sourceFile}"
+            "./${path.basename(sourceFilePath)}"
           ],
           "include": [
-            "${path.dirname(headerfilename)}/"
+            "${path.dirname(headerFilePath)}/"
           ],
           "libraries": [],
           "libpath": [],
-          "dependencies": ${JSON.stringify(manifestDeps)}
+          "dependencies": ${JSON.stringify(manifestDependencies)}
         }
       ]
     }`;
 
-  var bindingGyp = `
+  /**
+   * Generates the content for `binding.gyp`.
+   * This file is used by `node-gyp` to define how the native addon should be built.
+   */
+  const bindingGypContent = `
 {
   # List of files to include in this file:
   'includes': [
@@ -242,44 +275,49 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
 }
 `;
 
-  var includeGypi = `{
+  /**
+   * Generates the content for `include.gypi`.
+   * This file provides common variables and paths used by `binding.gyp`.
+   */
+  const includeGypiContent = `{
   # Define variables to be used throughout the configuration for all targets:
   'variables': {
     # Source directory:
-    'src_dir': '${path.dirname(sourceFile)}/',
+    'src_dir': '${path.dirname(sourceFilePath)}/',
 
     # Include directories:
     'include_dirs': [
-      '<!@(node -e "var arr = require(\\'${require.resolve("@stdlib/utils/library-manifest")}\\')(\\'${path.join(callingDir, "manifest.json")}\\',{},{\\'basedir\\':\\'${path.resolve(path.dirname(require.resolve("@stdlib/stdlib")), "../../../..")}\\'\,\\'paths\\':\\'posix\\'}).include; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+      '<!@(node -e "var arr = require(\'${require.resolve("@stdlib/utils/library-manifest")}\')(\'${path.join(callingDir, "manifest.json")}\',{},{\'basedir\':\'${path.resolve(path.dirname(require.resolve("@stdlib/stdlib")), "../../..")}\'\,\'paths\':\'posix\'}).include; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
     ],
 
     # Add-on destination directory:
-    'addon_output_dir': '${path.dirname(sourceFile)}/',
+    'addon_output_dir': '${path.dirname(sourceFilePath)}/',
 
     # Source files:
     'src_files': [
       '<(src_dir)/addon.c',
-      '<!@(node -e "var arr = require(\\'${require.resolve("@stdlib/utils/library-manifest")}\\')(\\'${path.join(callingDir, "manifest.json")}\\',{},{\\'basedir\\':\\'${path.resolve(path.dirname(require.resolve("@stdlib/stdlib")), "../../../..")}\\'\,\\'paths\\':\\'posix\\'}).src; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+      '<!@(node -e "var arr = require(\'${require.resolve("@stdlib/utils/library-manifest")}\')(\'${path.join(callingDir, "manifest.json")}\',{},{\'basedir\':\'${path.resolve(path.dirname(require.resolve("@stdlib/stdlib")), "../../..")}\'\,\'paths\':\'posix\'}).src; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
     ],
 
     # Library dependencies:
     'libraries': [
-      '<!@(node -e "var arr = require(\\'${require.resolve("@stdlib/utils/library-manifest")}\\')(\\'${path.join(callingDir, "manifest.json")}\\',{},{\\'basedir\\':\\'${path.resolve(path.dirname(require.resolve("@stdlib/stdlib")), "../../../..")}\\'\,\\'paths\\':\\'posix\\'}).libraries; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+      '<!@(node -e "var arr = require(\'${require.resolve("@stdlib/utils/library-manifest")}\')(\'${path.join(callingDir, "manifest.json")}\',{},{\'basedir\':\'${path.resolve(path.dirname(require.resolve("@stdlib/stdlib")), "../../..")}\'\,\'paths\':\'posix\'}).libraries; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
     ],
 
     # Library directories:
     'library_dirs': [
-      '<!@(node -e "var arr = require(\\'${require.resolve("@stdlib/utils/library-manifest")}\\')(\\'${path.join(callingDir, "manifest.json")}\\',{},{\\'basedir\\':\\'${path.resolve(path.dirname(require.resolve("@stdlib/stdlib")), "../../../..")}\\'\,\\'paths\\':\\'posix\\'}).libpath; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
+      '<!@(node -e "var arr = require(\'${require.resolve("@stdlib/utils/library-manifest")}\')(\'${path.join(callingDir, "manifest.json")}\',{},{\'basedir\':\'${path.resolve(path.dirname(require.resolve("@stdlib/stdlib")), "../../..")}\'\,\'paths\':\'posix\'}).libpath; for ( var i = 0; i < arr.length; i++ ) { console.log( arr[ i ] ); }")',
     ],
   }, # end variables
 }
 `;
 
-  // console.log(JSON.stringify(manifestDeps));
+  // Generate the N-API argument parsing and function call logic for addon.c
+  let addonConfigContent = `\n\tSTDLIB_NAPI_ARGV( env, info, argv, argc, ${argsInfo.result.length} );\n`;
 
-  // CONTENT
-  let addonConfig = `\n\tSTDLIB_NAPI_ARGV( env, info, argv, argc, ${argsinfo.result.length} );\n`;
-  for (const variable of argsinfo.result) {
+  // Process non-array arguments
+  for (const variable of argsInfo.result) {
+    // Check if the variable is a standard argument (not an array or size variable)
     if (
       variable.key === "argv_int32" ||
       variable.key === "argv_double" ||
@@ -287,69 +325,85 @@ function generate_addon(sourceFile, data, headerfilename, headerdata) {
       variable.key === "argv_int64" ||
       variable.key === "argv_uint32"
     ) {
-      if (/^N_/.test(variable.variableName)) {
-        // skip if it is a size variable name as it will be used in the array macro
-      } else {
-        // add the macro normally for other variables
-        addonConfig += `\t${macros[variable.key]}( env, ${variable.variableName}, argv, ${variable.index} );\n`;
+      if (!/^N_/.test(variable.variableName)) {
+        // Add the macro for standard scalar variables
+        addonConfigContent += `\t${macroMappings[variable.key]}( env, ${variable.variableName}, argv, ${variable.index} );\n`;
       }
     }
   }
 
-  for (const variable of argsinfo.result) {
+  // Process array arguments (those not covered by the previous loop)
+  for (const variable of argsInfo.result) {
+    // If the variable is NOT a standard scalar argument (i.e., it's an array)
     if (
       !(
-        // NOT
-        (
-          variable.key === "argv_int32" ||
-          variable.key === "argv_double" ||
-          variable.key === "argv_float" ||
-          variable.key === "argv_int64" ||
-          variable.key === "argv_uint32"
-        )
+        variable.key === "argv_int32" ||
+        variable.key === "argv_double" ||
+        variable.key === "argv_float" ||
+        variable.key === "argv_int64" ||
+        variable.key === "argv_uint32"
       )
     ) {
-      addonConfig += `\t${macros[variable.key]}( env, ${variable.variableName}, N_${variable.variableName}, argv, ${variable.index} );\n`;
+      // Add the macro for array variables, including their size variable (N_variableName)
+      addonConfigContent += `\t${macroMappings[variable.key]}( env, ${variable.variableName}, N_${variable.variableName}, argv, ${variable.index} );\n`;
     }
   }
 
-  // FUNCTION CALL
-  let functionCall;
+  // Determine the C function call and N-API return value handling
+  let functionCallContent;
+  const functionArgs = argsInfo.result
+    .map((arg) => arg.variableName)
+    .join(", ");
 
-  if (argsinfo.returnType === "void") {
-    functionCall = `\n\t${argsinfo.functionName}(${argsinfo.result.map((arg) => arg.variableName).join(", ")});\n\treturn NULL;\n`;
+  if (argsInfo.returnType === "void") {
+    functionCallContent = `\n\t${argsInfo.functionName}(${functionArgs});\n\treturn NULL;\n`;
   } else if (
-    argsinfo.returnType === "float" ||
-    argsinfo.returnType === "double"
+    argsInfo.returnType === "float" ||
+    argsInfo.returnType === "double"
   ) {
-    functionCall = `\n\tSTDLIB_NAPI_CREATE_DOUBLE( env, ${argsinfo.functionName}(${argsinfo.result.map((arg) => arg.variableName).join(", ")}), FINALRETURNVALUEADDON );\n\treturn FINALRETURNVALUEADDON;\n`;
+    functionCallContent = `\n\tSTDLIB_NAPI_CREATE_DOUBLE( env, ${argsInfo.functionName}(${functionArgs}), FINALRETURNVALUEADDON );\n\treturn FINALRETURNVALUEADDON;\n`;
   } else if (
-    argsinfo.returnType === "int" ||
-    argsinfo.returnType === "int32_t"
+    argsInfo.returnType === "int" ||
+    argsInfo.returnType === "int32_t"
   ) {
-    functionCall = `\n\tSTDLIB_NAPI_CREATE_INT32( env, ${argsinfo.functionName}(${argsinfo.result.map((arg) => arg.variableName).join(", ")}), FINALRETURNVALUEADDON );\n\treturn FINALRETURNVALUEADDON;\n`;
+    functionCallContent = `\n\tSTDLIB_NAPI_CREATE_INT32( env, ${argsInfo.functionName}(${functionArgs}), FINALRETURNVALUEADDON );\n\treturn FINALRETURNVALUEADDON;\n`;
   }
 
-  const addon = `#include "${headerfilename}"\n#include "stdlib/napi/export.h"\n#include "stdlib/napi/argv.h"\n${addtionalIncludes}\n#include <node_api.h>\n\nstatic napi_value addon( napi_env env, napi_callback_info info ) {${addonConfig}${functionCall}}\n\nSTDLIB_NAPI_MODULE_EXPORT_FCN( addon )`;
+  // Assemble the final `addon.c` content
+  const addonCContent =
+    `#include "${path.basename(headerFilePath)}"\n` +
+    `#include "stdlib/napi/export.h"\n` +
+    `#include "stdlib/napi/argv.h"\n` +
+    `${additionalIncludes}\n` +
+    `#include <node_api.h>\n\n` +
+    `static napi_value addon( napi_env env, napi_callback_info info ) {` +
+    `${addonConfigContent}` +
+    `${functionCallContent}` +
+    `}\n\n` +
+    `STDLIB_NAPI_MODULE_EXPORT_FCN( addon )`;
 
-  fs.writeFileSync(path.join(callingDir, "addon.c"), addon);
-  fs.writeFileSync(path.join(callingDir, "manifest.json"), manifestJSON);
-  fs.writeFileSync(path.join(callingDir, "binding.gyp"), bindingGyp);
-  fs.writeFileSync(path.join(callingDir, "include.gypi"), includeGypi);
+  // Write all generated files to the current working directory
+  fs.writeFileSync(path.join(callingDir, "addon.c"), addonCContent);
+  fs.writeFileSync(path.join(callingDir, "manifest.json"), manifestJSONContent);
+  fs.writeFileSync(path.join(callingDir, "binding.gyp"), bindingGypContent);
+  fs.writeFileSync(path.join(callingDir, "include.gypi"), includeGypiContent);
 
+  // Define the path to the node-gyp executable
   const nodeGypBinaryPath = path.resolve(
     __dirname,
     "../node_modules/.bin/node-gyp",
   );
 
+  // Execute node-gyp commands to clean, configure, and build the addon
   try {
-    // Clean
+    console.log("Cleaning previous build...");
     execSync(`${nodeGypBinaryPath} clean`, { stdio: "inherit" });
 
-    // Configure and build
+    console.log("Configuring and building addon...");
     execSync(`${nodeGypBinaryPath} configure build`, { stdio: "inherit" });
+    console.log("Addon built successfully.");
   } catch (error) {
-    console.error("Build failed:", error.message);
+    console.error("Error during addon build process:", error.message);
     process.exit(1);
   }
 }

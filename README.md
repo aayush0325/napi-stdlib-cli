@@ -33,7 +33,6 @@ See the `examples/` directory for detailed instructions on how to use this!
 - `--help`: Help command.
 - `--version`: Version command.
 
-
 ## Features
 
 - **Node-API Integration**: Leverages the Node-API macros from `stdlib-js` for seamless addon creation.
